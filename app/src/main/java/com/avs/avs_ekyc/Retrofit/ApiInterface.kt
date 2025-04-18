@@ -20,4 +20,7 @@ interface ApiInterface {
     @POST("FrmPending_List.aspx")
     fun getPendingList(@Query("data") data : String): Call<UniversalResponseModel>
 
+    @POST("frmkycdetails.aspx")
+    fun getKycDetails(@Query("data") data : String): Call<UniversalResponseModel>
+
 }

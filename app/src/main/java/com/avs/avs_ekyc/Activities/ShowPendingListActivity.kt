@@ -44,6 +44,10 @@ class ShowPendingListActivity : AppCompatActivity() {
 
         callPendingList(11,10603)
 
+        binding.addKyc.setOnClickListener {
+            startActivity(Intent(this@ShowPendingListActivity, GetCustomerInformationActivity::class.java))
+        }
+
     }
 
     private fun callPendingList(brcd: Int, prdCode: Int) {
@@ -88,7 +92,7 @@ class ShowPendingListActivity : AppCompatActivity() {
                                             val adapter = PendingListAdapter(customerList)
                                             binding.recyclerView.adapter = adapter
                                         } else {
-                                            Constant.error(this@ShowPendingListActivity, "Login failed")
+                                            Constant.error(this@ShowPendingListActivity, "Success failed")
                                         }
                                     } else {
                                         Constant.error(this@ShowPendingListActivity, decryptedResponse)
