@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Activities.RelatedPersonImageActivity">
+
+    <include
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/custom_action_bar"/>
+
+    <LinearLayout
+        android:id="@+id/societyLayout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Society / Industry / Trusty Details"
+            android:textSize="@dimen/text_18"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_margin="@dimen/margin_10"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/societyImages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
+
+   <LinearLayout
+       android:id="@+id/relatedPersonLayout"
+       android:orientation="vertical"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content">
+
+       <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="Related to person details"
+           android:textSize="@dimen/text_18"
+           android:textColor="@color/black"
+           android:textStyle="bold"
+           android:layout_margin="@dimen/margin_10"/>
+
+       <androidx.recyclerview.widget.RecyclerView
+           android:id="@+id/relatedPersonDetails"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"/>
+
+   </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/uploadImages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Upload Images"
+        android:layout_margin="@dimen/margin_10"/>
+
+</LinearLayout>

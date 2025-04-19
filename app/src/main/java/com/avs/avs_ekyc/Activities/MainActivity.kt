@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
 import com.avs.avs_ekyc.Constant.Constant
 import com.avs.avs_ekyc.Constant.CustomProgressDialog
+import com.avs.avs_ekyc.Constant.SharedPreferenceManager
 import com.avs.avs_ekyc.Model.UniversalResponseModel
 import com.avs.avs_ekyc.databinding.ActivityMainBinding
 import com.taskease.yksfoundation.Retrofit.RetrofitInstance
@@ -25,6 +26,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        SharedPreferenceManager.init(this)
 
         val message = "IURaC3mQe7H+nK1+VCX7rHls5ziDA6CRIUwxx+USG7ImS0zIwRd6S3iFnQCmWu9+"
         val decryptedMessage = AESCryptoUtil.decrypt(message)
@@ -83,8 +86,13 @@ class MainActivity : AppCompatActivity() {
                                         val status = jsonObject.getString("Status")
                                         val bankName = jsonObject.getString("BankName")
                                         val agentName = jsonObject.getString("Agent_Name")
+                                        val agentNo = jsonObject.getString("Agent_No")
 
                                         if (status.equals("Success", ignoreCase = true)) {
+
+                                            SharedPreferenceManager.saveString(
+                                                SharedPreferenceManager.AGENT_NO , agentNo)
+
                                             Constant.success(this@MainActivity, "Login successful")
                                             startActivity(Intent(this@MainActivity,
                                                 DashboardActivity::class.java)

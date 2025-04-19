@@ -100,6 +100,8 @@ class GetCustomerInformationActivity : AppCompatActivity() {
                                                     bundle.putString("sub_district",jsonObject.getString("City"))
                                                     bundle.putString("state",jsonObject.getString("StateCode"))
                                                     bundle.putString("pincode",jsonObject.getString("Pin"))
+                                                    bundle.putString("type",jsonObject.getString("Type"))
+                                                    bundle.putString("cust_no",custNo)
 
                                                     startActivity(Intent(this@GetCustomerInformationActivity, CustomerDataActivity::class.java)
                                                         .putExtra("bundle",bundle)

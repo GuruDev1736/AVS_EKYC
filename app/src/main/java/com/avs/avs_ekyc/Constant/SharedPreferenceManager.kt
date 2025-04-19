@@ -5,13 +5,10 @@ import android.content.SharedPreferences
 
 object SharedPreferenceManager {
 
-    private const val PREF_NAME = "YKSFoundation"
+    private const val PREF_NAME = "AVS"
 
-    const val TOKEN = "token"
-    const val EMAIL = "email"
-    const val PASSWORD = "password"
-    const val USER_ID = "user_id"
-    const val ROLE = "role"
+    const val AGENT_NO = "agent_no"
+    const val CUST_NO = "cust_no"
 
     private lateinit var sharedPreferences: SharedPreferences
 

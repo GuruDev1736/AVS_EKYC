@@ -23,4 +23,12 @@ interface ApiInterface {
     @POST("frmkycdetails.aspx")
     fun getKycDetails(@Query("data") data : String): Call<UniversalResponseModel>
 
+    @Headers("Content-Type: text/plain")
+    @GET("ImageScanner.asmx/getImageCkyc")
+    fun getImageCkyc(@Body data : String): Call<UniversalResponseModel>
+
+    @Headers("Content-Type: text/plain")
+    @POST("KYCVERIFYDETAILS.asmx/getImageCkyc")
+    fun updateDetails(@Body data : String): Call<UniversalResponseModel>
+
 }
