@@ -9,6 +9,8 @@ object SharedPreferenceManager {
 
     const val AGENT_NO = "agent_no"
     const val CUST_NO = "cust_no"
+    const val USERNAME = "username"
+    const val PASSWORD = "password"
 
     private lateinit var sharedPreferences: SharedPreferences
 

@@ -18,6 +18,7 @@ import com.avs.avs_ekyc.Model.UniversalResponseModel
 import com.avs.avs_ekyc.Model.UpdateDetailsModel
 import com.avs.avs_ekyc.R
 import com.avs.avs_ekyc.databinding.ActivityCustomerDataBinding
+import com.google.gson.Gson
 import com.taskease.yksfoundation.Retrofit.RetrofitInstance
 import okio.IOException
 import org.json.JSONObject
@@ -41,36 +42,51 @@ class CustomerDataActivity : AppCompatActivity() {
         binding.actionBar.toolbar.title = "Customer Data"
 
         val bundle = intent.getBundleExtra("bundle")
-        val customerNo = bundle?.getString("cust_no")
-        val customerName = bundle?.getString("name")
-        val dob = bundle?.getString("dob")
-        val uid = bundle?.getString("uid")
-        val mob = bundle?.getString("mob")
-        val house = bundle?.getString("house")
-        val loc = bundle?.getString("loc")
-        val vtc = bundle?.getString("vtc")
-        val district = bundle?.getString("district")
-        val subDistrict = bundle?.getString("sub_district")
-        val state = bundle?.getString("state")
-        val pincode = bundle?.getString("pincode")
-        val type = bundle?.getString("type")
+        val name = bundle?.getString("name") ?: ""
+        val dob = bundle?.getString("dob") ?: ""
+        val mobile = bundle?.getString("mobile") ?: ""
+        val uid = bundle?.getString("uid") ?: ""
+        val house = bundle?.getString("house") ?: ""
+        val loc = bundle?.getString("loc") ?: ""
+        val vtc = bundle?.getString("vtc") ?: ""
+        val district = bundle?.getString("district") ?: ""
+        val subDistrict = bundle?.getString("sub_district") ?: ""
+        val state = bundle?.getString("state") ?: ""
+        val pincode = bundle?.getString("pincode") ?: ""
+        val stateCode = bundle?.getString("stateCode") ?: ""
+        val fatherName = bundle?.getString("fatherName") ?: ""
+        val gender = bundle?.getString("gender") ?: ""
+        val dateOfApplication = bundle?.getString("dateOfApplication") ?: ""
+        val pan = bundle?.getString("pan") ?: ""
+        val address1 = bundle?.getString("address1") ?: ""
+        val address2 = bundle?.getString("address2") ?: ""
+        val address3 = bundle?.getString("address3") ?: ""
+        val relDistrict = bundle?.getString("relDistrict") ?: ""
+        val relCity = bundle?.getString("relCity") ?: ""
+        val relPin = bundle?.getString("relPin") ?: ""
+        val relStateCode = bundle?.getString("relStateCode") ?: ""
+        val type = bundle?.getString("type") ?: ""
+        val regCerti = bundle?.getString("regCerti") ?: ""
+        val certiIncome = bundle?.getString("certiIncome") ?: ""
+        val custNo = bundle?.getString("cust_no") ?: ""
 
-       when(type)
+
+        when(type)
        {
            "1" -> binding.type.setText("Individual")
            "2" -> binding.type.setText("Minor")
            "3" -> binding.type.setText("Legal")
        }
 
-        binding.custName.setText(customerName)
+        binding.custName.setText(name)
         binding.dob.setText(dob)
         binding.uid.setText(uid)
-        binding.mob.setText(mob)
+        binding.mob.setText(mobile)
         binding.house.setText(house)
         binding.loc.setText(loc)
         binding.vtc.setText(vtc)
-        binding.district.setText(district)
-        binding.subDistrict.setText(subDistrict)
+        binding.district.setText(relDistrict)
+        binding.subDistrict.setText(relCity)
         binding.state.setText(state)
         binding.pincode.setText(pincode)
 
@@ -89,19 +105,43 @@ class CustomerDataActivity : AppCompatActivity() {
             val pincode = binding.pincode.text.toString()
 
             callupdateDetails(type,name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,
-                customerNo.toString()
+                custNo.toString(),pan,gender,fatherName,dateOfApplication,regCerti,certiIncome
             )
         }
     }
 
-    private fun callupdateDetails(type: String?, name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , customerNo : String) {
+    private fun callupdateDetails(type: String?, name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , customerNo : String, pan : String, gender : String, fatherName : String, dateOfApplication : String, regCerti : String, certiIncome : String) {
         val progress = CustomProgressDialog(this)
         progress.show()
 
         val agentNo = SharedPreferenceManager.getString(SharedPreferenceManager.AGENT_NO)
 
-        val model = UpdateDetailsModel(customerNo,name,dob,mob,"",uid,house,loc,vtc,district,subDistrict,state,pincode,"","",agentNo,"","","")
-        val encryptedData = AESCryptoUtil.encrypt(model.toString())
+        val modelJson = JSONObject().apply {
+            put("custNo", customerNo.toString())
+            put("CUSTNAME", name.toString())
+            put("DOB", dob.toString())
+            put("MOBNO", mob.toString())
+            put("PANNO", pan.toString())
+            put("AdharNO", uid.toString())
+            put("Adreessline1", house.toString())
+            put("Adreessline2", loc.toString())
+            put("Adreessline3", vtc.toString())
+            put("DISTRICT", district.toString())
+            put("CITY", subDistrict.toString())
+            put("Statecode", state.toString())
+            put("Pincode", pincode.toString())
+            put("Gender", gender.toString())
+            put("FatherName", fatherName.toString())
+            put("Agentcode", agentNo.toString())
+            put("DateOfApplication", dateOfApplication.toString())
+            put("RegiCerti", regCerti.toString())
+            put("Certi_Inco", certiIncome.toString())
+        }
+
+        val data = AESCryptoUtil.encrypt(modelJson.toString().trimIndent())
+        val encryptedData = cleanEncryptedString(data)
+
+        Log.d("EncryptedData", encryptedData)
 
         try {
             RetrofitInstance.getInstance().updateDetails(encryptedData)
@@ -180,5 +220,12 @@ class CustomerDataActivity : AppCompatActivity() {
             Log.e("LoginException", e.message ?: "Exception")
             Constant.error(this@CustomerDataActivity, "Unexpected error occurred")
         }
+    }
+
+    fun cleanEncryptedString(dirtyString: String): String {
+        return dirtyString
+            .replace("\n", "")
+            .replace("\\u003d", "=")
+            .replace("\"", "") // optional: removes starting/ending quotes
     }
 }
