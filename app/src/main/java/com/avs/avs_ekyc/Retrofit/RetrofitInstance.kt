@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
 
@@ -14,6 +15,9 @@ object RetrofitInstance {
         .addInterceptor(okhttp3.logging.HttpLoggingInterceptor().apply {
             level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY // Enable logging
         })
+        .connectTimeout(60, TimeUnit.SECONDS) // Connection timeout
+        .readTimeout(60, TimeUnit.SECONDS)    // Read timeout
+        .writeTimeout(60, TimeUnit.SECONDS)   // Write timeout
         .build()
 
     val gson = GsonBuilder()

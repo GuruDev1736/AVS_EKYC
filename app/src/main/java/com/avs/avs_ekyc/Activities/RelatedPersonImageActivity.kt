@@ -84,7 +84,7 @@ class RelatedPersonImageActivity : AppCompatActivity() {
 
         val options = UCrop.Options().apply {
             setCompressionFormat(Bitmap.CompressFormat.JPEG)
-            setCompressionQuality(90)
+            setCompressionQuality(50)
             setFreeStyleCropEnabled(true)
         }
 
