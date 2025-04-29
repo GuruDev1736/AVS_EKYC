@@ -21,7 +21,7 @@ import retrofit2.Response
 
 class CustomerDataActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityCustomerDataBinding
+    private lateinit var binding: ActivityCustomerDataBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,12 +64,11 @@ class CustomerDataActivity : AppCompatActivity() {
         val custNo = bundle?.getString("cust_no") ?: ""
 
 
-        when(type)
-       {
-           "1" -> binding.type.setText("Individual")
-           "2" -> binding.type.setText("Minor")
-           "3" -> binding.type.setText("Legal")
-       }
+        when (type) {
+            "1" -> binding.type.setText("Individual")
+            "2" -> binding.type.setText("Minor")
+            "3" -> binding.type.setText("Legal")
+        }
 
         binding.custName.setText(name)
         binding.dob.setText(dob)
@@ -97,83 +96,112 @@ class CustomerDataActivity : AppCompatActivity() {
             val state = binding.state.text.toString()
             val pincode = binding.pincode.text.toString()
 
-            if (valid(name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,type))
-            {
-                callupdateDetails(type,name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,
-                    custNo.toString(),pan,gender,fatherName,dateOfApplication,regCerti,certiIncome
+            if (valid(
+                    name,
+                    dob,
+                    uid,
+                    mob,
+                    house,
+                    loc,
+                    vtc,
+                    district,
+                    subDistrict,
+                    state,
+                    pincode,
+                    type
+                )
+            ) {
+                callupdateDetails(
+                    type,
+                    name,
+                    dob,
+                    uid,
+                    mob,
+                    house,
+                    loc,
+                    vtc,
+                    district,
+                    subDistrict,
+                    state,
+                    pincode,
+                    custNo.toString(),
+                    pan,
+                    gender,
+                    fatherName,
+                    dateOfApplication,
+                    regCerti,
+                    certiIncome
                 )
             }
         }
     }
 
-    private fun valid(name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , type: String?) : Boolean
-    {
-        if (name.isEmpty() || name.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter name")
+    private fun valid(
+        name: String,
+        dob: String,
+        uid: String,
+        mob: String,
+        house: String,
+        loc: String,
+        vtc: String,
+        district: String,
+        subDistrict: String,
+        state: String,
+        pincode: String,
+        type: String?
+    ): Boolean {
+        if (name.isEmpty() || name.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter name")
             return false
         }
-        if (dob.isEmpty() || dob.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter dob")
+        if (dob.isEmpty() || dob.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter dob")
             return false
         }
-        if (type != "3")
-        {
-            if (uid.isEmpty() || uid.isBlank())
-            {
-                Constant.error(this@CustomerDataActivity,"Please enter uid")
+        if (type != "3") {
+            if (uid.isEmpty() || uid.isBlank()) {
+                Constant.error(this@CustomerDataActivity, "Please enter uid")
                 return false
             }
-            if (uid.length < 12)
-            {
-                Constant.error(this@CustomerDataActivity,"UID is invalid")
+            if (uid.length < 12) {
+                Constant.error(this@CustomerDataActivity, "UID is invalid")
                 return false
             }
         }
-        if (mob.isEmpty() || mob.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter Mobile No")
+        if (mob.isEmpty() || mob.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter Mobile No")
             return false
         }
-        if (mob.length < 10)
-        {
-            Constant.error(this@CustomerDataActivity,"Mobile No is not valid")
+        if (mob.length < 10) {
+            Constant.error(this@CustomerDataActivity, "Mobile No is not valid")
             return false
         }
-        if (house.isEmpty() || house.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter house")
+        if (house.isEmpty() || house.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter house")
             return false
         }
-        if (loc.isEmpty() || loc.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter loc")
+        if (loc.isEmpty() || loc.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter loc")
             return false
         }
-        if (vtc.isEmpty() || vtc.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter vtc")
+        if (vtc.isEmpty() || vtc.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter vtc")
             return false
         }
-        if (district.isEmpty() || district.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter district")
+        if (district.isEmpty() || district.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter district")
             return false
         }
-        if (subDistrict.isEmpty() || subDistrict.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter subDistrict")
+        if (subDistrict.isEmpty() || subDistrict.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter subDistrict")
             return false
         }
-        if (state.isEmpty() || state.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter state")
+        if (state.isEmpty() || state.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter state")
             return false
         }
-        if (pincode.isEmpty() || pincode.isBlank())
-        {
-            Constant.error(this@CustomerDataActivity,"Please enter pincode")
+        if (pincode.isEmpty() || pincode.isBlank()) {
+            Constant.error(this@CustomerDataActivity, "Please enter pincode")
             return false
         }
         return true
@@ -183,7 +211,27 @@ class CustomerDataActivity : AppCompatActivity() {
         return RequestBody.create("text/plain".toMediaTypeOrNull(), this)
     }
 
-    private fun callupdateDetails(type: String?, name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , customerNo : String, pan : String, gender : String, fatherName : String, dateOfApplication : String, regCerti : String, certiIncome : String) {
+    private fun callupdateDetails(
+        type: String?,
+        name: String,
+        dob: String,
+        uid: String,
+        mob: String,
+        house: String,
+        loc: String,
+        vtc: String,
+        district: String,
+        subDistrict: String,
+        state: String,
+        pincode: String,
+        customerNo: String,
+        pan: String,
+        gender: String,
+        fatherName: String,
+        dateOfApplication: String,
+        regCerti: String,
+        certiIncome: String
+    ) {
         val progress = CustomProgressDialog(this)
         progress.show()
 
@@ -219,7 +267,10 @@ class CustomerDataActivity : AppCompatActivity() {
         try {
             RetrofitInstance.getInstance().updateDetails(encryptedData)
                 .enqueue(object : Callback<UniversalResponseModel> {
-                    override fun onResponse(call: Call<UniversalResponseModel>, response: Response<UniversalResponseModel>) {
+                    override fun onResponse(
+                        call: Call<UniversalResponseModel>,
+                        response: Response<UniversalResponseModel>
+                    ) {
                         progress.dismiss()
 
                         if (response.isSuccessful) {
@@ -237,30 +288,42 @@ class CustomerDataActivity : AppCompatActivity() {
 
                                         if (status.equals("Success", ignoreCase = true)) {
 
-                                            if (type == "1")
-                                            {
-                                                startActivity(Intent(this@CustomerDataActivity, IndivdualPhotoActivity::class.java)
-                                                    .putExtra("type",type)
-                                                    .putExtra("customerNo",customerNo)
+                                            if (type == "1") {
+                                                startActivity(
+                                                    Intent(
+                                                        this@CustomerDataActivity,
+                                                        IndivdualPhotoActivity::class.java
+                                                    )
+                                                        .putExtra("type", type)
+                                                        .putExtra("customerNo", customerNo)
                                                 )
                                             }
-                                            if (type == "2")
-                                            {
-                                                startActivity(Intent(this@CustomerDataActivity, IndivdualPhotoActivity::class.java)
-                                                    .putExtra("type",type)
-                                                    .putExtra("customerNo",customerNo)
+                                            if (type == "2") {
+                                                startActivity(
+                                                    Intent(
+                                                        this@CustomerDataActivity,
+                                                        IndivdualPhotoActivity::class.java
+                                                    )
+                                                        .putExtra("type", type)
+                                                        .putExtra("customerNo", customerNo)
                                                 )
                                             }
-                                            if (type == "3")
-                                            {
-                                                startActivity(Intent(this@CustomerDataActivity, RelatedPersonImageActivity::class.java)
-                                                    .putExtra("type",type)
-                                                    .putExtra("customerNo",customerNo)
+                                            if (type == "3") {
+                                                startActivity(
+                                                    Intent(
+                                                        this@CustomerDataActivity,
+                                                        RelatedPersonImageActivity::class.java
+                                                    )
+                                                        .putExtra("type", type)
+                                                        .putExtra("customerNo", customerNo)
                                                 )
                                             }
 
                                         } else {
-                                            Constant.error(this@CustomerDataActivity, "Success failed")
+                                            Constant.error(
+                                                this@CustomerDataActivity,
+                                                "Success failed"
+                                            )
                                         }
                                     } else {
                                         Constant.error(this@CustomerDataActivity, decryptedResponse)
@@ -271,7 +334,10 @@ class CustomerDataActivity : AppCompatActivity() {
                                     Constant.error(this@CustomerDataActivity, "Parsing error")
                                 }
                             } else {
-                                Constant.error(this@CustomerDataActivity, "Empty response from server")
+                                Constant.error(
+                                    this@CustomerDataActivity,
+                                    "Empty response from server"
+                                )
                             }
                         } else {
                             Constant.error(this@CustomerDataActivity, "Server returned error")
@@ -280,11 +346,10 @@ class CustomerDataActivity : AppCompatActivity() {
 
                     override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
                         progress.dismiss()
-                        if (t is IOException) {
-                            Constant.error(this@CustomerDataActivity, "Network issue. Check connection.")
-                        } else {
-                            Constant.error(this@CustomerDataActivity, "API error: ${t.localizedMessage}")
-                        }
+                        Constant.error(
+                            this@CustomerDataActivity,
+                            "API error: ${t.localizedMessage}"
+                        )
                         Log.e("LoginError", t.message ?: "Unknown error")
                     }
                 })
