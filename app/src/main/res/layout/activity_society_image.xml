@@ -24,7 +24,7 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/relatedPersonLayout"
+                android:id="@+id/societyLayout"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -32,21 +32,22 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Related to person details"
+                    android:text="Society / Industry / Trusty Details"
                     android:textSize="@dimen/text_18"
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:layout_margin="@dimen/margin_10"/>
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/relatedPersonDetails"
+                    android:id="@+id/societyImages"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
+
 
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/relatedButton"
+                android:id="@+id/societyButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Upload Images"

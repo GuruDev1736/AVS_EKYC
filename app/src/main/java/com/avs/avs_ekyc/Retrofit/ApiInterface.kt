@@ -1,15 +1,12 @@
 package com.taskease.yksfoundation.Retrofit
 
 import com.avs.avs_ekyc.Model.UniversalResponseModel
-import okhttp3.ResponseBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiInterface {
@@ -24,11 +21,11 @@ interface ApiInterface {
     fun getKycDetails(@Query("data") data : String): Call<UniversalResponseModel>
 
     @Headers("Content-Type: text/plain")
-    @GET("ImageScanner.asmx/getImageCkyc")
-    fun getImageCkyc(@Body data : String): Call<UniversalResponseModel>
+    @POST("ImageScanner.asmx/getImageCkyc")
+    fun getImageCkyc(@Body data : RequestBody): Call<UniversalResponseModel>
 
     @Headers("Content-Type: text/plain")
     @POST("KYCVERIFYDETAILS.asmx/getImageCkyc")
-    fun updateDetails(@Body data : String): Call<UniversalResponseModel>
+    fun updateDetails(@Body data: RequestBody): Call<UniversalResponseModel>
 
 }

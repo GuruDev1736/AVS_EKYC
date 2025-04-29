@@ -9,6 +9,7 @@ object RetrofitInstance {
 
     val BASE_URL = "http://110.227.207.211:90/CKYCTEST_API/"
 
+
     val client = OkHttpClient.Builder()
         .addInterceptor(okhttp3.logging.HttpLoggingInterceptor().apply {
             level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY // Enable logging

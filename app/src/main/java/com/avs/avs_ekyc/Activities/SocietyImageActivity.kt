@@ -15,7 +15,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.avs.avs_ekyc.Activities.RelatedPersonImageActivity
 import com.avs.avs_ekyc.Adapter.ImageGridAdapter.ImageGridAdapter
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
 import com.avs.avs_ekyc.Constant.Constant
@@ -24,6 +23,8 @@ import com.avs.avs_ekyc.Constant.SharedPreferenceManager
 import com.avs.avs_ekyc.Model.UniversalResponseModel
 import com.avs.avs_ekyc.R
 import com.avs.avs_ekyc.databinding.ActivityIndivdualPhotoBinding
+import com.avs.avs_ekyc.databinding.ActivityRelatedPersonImageBinding
+import com.avs.avs_ekyc.databinding.ActivitySocietyImageBinding
 import com.taskease.yksfoundation.Retrofit.RetrofitInstance
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -37,44 +38,49 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class IndivdualPhotoActivity : AppCompatActivity() {
+class SocietyImageActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityIndivdualPhotoBinding
+    private lateinit var binding: ActivitySocietyImageBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ImageGridAdapter
 
     private val imageUris = arrayOfNulls<Uri>(4)
     private val base64Images = arrayOfNulls<String>(4)
+    private val indivdualBase64Images = arrayOfNulls<String>(4)
+
 
     private var currentSlotIndex = -1
     private var currentPhotoPath: String? = null
 
 
-    private val cropImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val resultUri = UCrop.getOutput(result.data!!)
-            if (resultUri != null && currentSlotIndex != -1) {
-                imageUris[currentSlotIndex] = resultUri
-                adapter.updateImage(currentSlotIndex, resultUri)
-                encodeImageToBase64(resultUri, currentSlotIndex)
+    private val cropImageLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val resultUri = UCrop.getOutput(result.data!!)
+                if (resultUri != null && currentSlotIndex != -1) {
+                    imageUris[currentSlotIndex] = resultUri
+                    adapter.updateImage(currentSlotIndex, resultUri)
+                    encodeImageToBase64(resultUri, currentSlotIndex)
+                }
             }
         }
-    }
 
 
-    private val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            startCrop(it)
+    private val imagePicker =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let {
+                startCrop(it)
+            }
         }
-    }
 
 
-    private val cameraPicker = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && currentPhotoPath != null) {
-            val fileUri = Uri.fromFile(File(currentPhotoPath!!))
-            startCrop(fileUri)
+    private val cameraPicker =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success && currentPhotoPath != null) {
+                val fileUri = Uri.fromFile(File(currentPhotoPath!!))
+                startCrop(fileUri)
+            }
         }
-    }
 
 
     private fun startCrop(sourceUri: Uri) {
@@ -94,71 +100,42 @@ class IndivdualPhotoActivity : AppCompatActivity() {
         cropImageLauncher.launch(uCrop.getIntent(this))
     }
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityIndivdualPhotoBinding.inflate(layoutInflater)
+        binding = ActivitySocietyImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.actionBar.toolbar.setNavigationOnClickListener {
             finish()
         }
 
-        binding.actionBar.toolbar.title = "Individual Photo"
-
-        recyclerView = binding.rvImageGrid
-
-        val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
-        adapter = ImageGridAdapter(imageUris,imageNames) { index ->
-            currentSlotIndex = index
-            showImagePickerDialog()
-        }
-
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
-        recyclerView.adapter = adapter
+        binding.actionBar.toolbar.title = "Society Photo"
+        recyclerView = binding.societyImages
 
         val type = intent.getStringExtra("type")
 
-        if (type =="1")
-        {
-            binding.next.text = "Upload Images"
+        if (type == "3") {
+            val societyImageNames = arrayOf(
+                "Registration of Certificate",
+                "Certificate of Incorporation / Formation",
+                "Pan Card",
+                "Address Proof"
+            )
+            adapter = ImageGridAdapter(imageUris, societyImageNames) { index ->
+                currentSlotIndex = index
+                showImagePickerDialog()
+            }
 
-            binding.next.setOnClickListener {
+            recyclerView.layoutManager = GridLayoutManager(this, 2)
+            recyclerView.adapter = adapter
+
+            binding.societyButton.text = "Upload Images"
+
+            binding.societyButton.setOnClickListener {
                 if (base64Images.all { it != null }) {
                     uploadImages()
                 } else {
                     Constant.error(this, "Please select all images")
-                }
-            }
-        }
-
-        if (type == "2")
-        {
-            binding.next.text = "Next"
-
-            binding.next.setOnClickListener {
-
-                val type = intent.getStringExtra("type")
-                val customerNo = intent.getStringExtra("customerNo")
-
-                if (base64Images.all { it != null }) {
-                    // Join array to single string, each Base64 image separated by a delimiter
-                    val joinedImages = base64Images.joinToString("||") { it ?: "" }
-
-                    // Save to file
-                    val file = File.createTempFile("image_individual", ".txt", cacheDir)
-                    file.writeText(joinedImages)
-
-                    // Pass only the file path
-                    val intent = Intent(this@IndivdualPhotoActivity, RelatedPersonImageActivity::class.java)
-                    intent.putExtra("imageFilePath", file.absolutePath)
-                    intent.putExtra("type", type)
-                    intent.putExtra("customerNo", customerNo)
-                    startActivity(intent)
-                }
-                else{
-                    Constant.error(this@IndivdualPhotoActivity, "Please Upload All Images")
                 }
             }
         }
@@ -172,6 +149,17 @@ class IndivdualPhotoActivity : AppCompatActivity() {
         val customerNo = intent.getStringExtra("customerNo")
         val type = intent.getStringExtra("type")
 
+        val imagePath = intent.getStringExtra("relatedPersonImageFilePath")
+        val joinedImages = imagePath?.let { File(it).readText() }
+        val individualPhotos = joinedImages?.split("||")?.toTypedArray()
+        if (individualPhotos != null) {
+            for (i in individualPhotos.indices) {
+                if (individualPhotos[i].isNotEmpty()) {
+                    indivdualBase64Images[i] = individualPhotos[i]
+                }
+            }
+        }
+
         val modelJson = JSONObject().apply {
             put("custNo", customerNo.toString())
             put("Agentcode", agentNo.toString())
@@ -180,14 +168,14 @@ class IndivdualPhotoActivity : AppCompatActivity() {
             put("ScietyRemarkType", "")
             put("relatedRemark", "")
             put("RelatedRemarkType", "")
-            put("file", base64Images[0] ?: "")
-            put("file1", base64Images[1] ?: "")
-            put("file2", base64Images[2] ?: "")
-            put("file3", base64Images[3] ?: "")
-            put("file4", "")
-            put("file5", "")
-            put("file6", "")
-            put("file7", "")
+            put("file", indivdualBase64Images.getOrNull(0) ?: "")
+            put("file1", indivdualBase64Images.getOrNull(1) ?: "")
+            put("file2", indivdualBase64Images.getOrNull(2) ?: "")
+            put("file3", indivdualBase64Images.getOrNull(3) ?: "")
+            put("file4", base64Images[0] ?: "")
+            put("file5", base64Images[1] ?: "")
+            put("file6", base64Images[2] ?: "")
+            put("file7", base64Images[3] ?: "")
         }
 
         val encryptedData =
@@ -204,6 +192,7 @@ class IndivdualPhotoActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             val encryptedResponse = response.body()?.encrypted
                             val decryptedResponse = AESCryptoUtil.decrypt(encryptedResponse ?: "")
+                            Log.d("DECRYPT_RESPONSE", decryptedResponse.toString())
                             if (!decryptedResponse.isNullOrEmpty() && decryptedResponse.trim()
                                     .startsWith("{")
                             ) {
@@ -212,31 +201,31 @@ class IndivdualPhotoActivity : AppCompatActivity() {
 
                                 if (status.equals("Success", ignoreCase = true)) {
                                     Constant.success(
-                                        this@IndivdualPhotoActivity,
+                                        this@SocietyImageActivity,
                                         "Image Uploaded Successfully"
                                     )
                                     startActivity(
                                         Intent(
-                                            this@IndivdualPhotoActivity,
+                                            this@SocietyImageActivity,
                                             ShowPendingListActivity::class.java
                                         )
                                             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                     )
                                 } else {
-                                    Constant.error(this@IndivdualPhotoActivity, status)
+                                    Constant.error(this@SocietyImageActivity, status)
                                 }
                             } else {
-                                Constant.error(this@IndivdualPhotoActivity, "Invalid response")
+                                Constant.error(this@SocietyImageActivity, "Invalid response")
                             }
                         } else {
-                            Constant.error(this@IndivdualPhotoActivity, "Server error")
+                            Constant.error(this@SocietyImageActivity, "Server error")
                         }
                     }
 
                     override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
                         progress.dismiss()
                         Constant.error(
-                            this@IndivdualPhotoActivity,
+                            this@SocietyImageActivity,
                             "Failed: ${t.localizedMessage}"
                         )
                     }

@@ -3,23 +3,16 @@ package com.avs.avs_ekyc.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.avs.avs_ekyc.Activities.ShowPendingListActivity
-import com.avs.avs_ekyc.Adapter.PendingListAdapter
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
 import com.avs.avs_ekyc.Constant.Constant
 import com.avs.avs_ekyc.Constant.CustomProgressDialog
 import com.avs.avs_ekyc.Constant.SharedPreferenceManager
-import com.avs.avs_ekyc.Model.PendingCustomer
 import com.avs.avs_ekyc.Model.UniversalResponseModel
-import com.avs.avs_ekyc.Model.UpdateDetailsModel
-import com.avs.avs_ekyc.R
 import com.avs.avs_ekyc.databinding.ActivityCustomerDataBinding
-import com.google.gson.Gson
 import com.taskease.yksfoundation.Retrofit.RetrofitInstance
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import okio.IOException
 import org.json.JSONObject
 import retrofit2.Call
@@ -104,10 +97,90 @@ class CustomerDataActivity : AppCompatActivity() {
             val state = binding.state.text.toString()
             val pincode = binding.pincode.text.toString()
 
-            callupdateDetails(type,name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,
-                custNo.toString(),pan,gender,fatherName,dateOfApplication,regCerti,certiIncome
-            )
+            if (valid(name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,type))
+            {
+                callupdateDetails(type,name,dob,uid,mob,house,loc,vtc,district,subDistrict,state,pincode,
+                    custNo.toString(),pan,gender,fatherName,dateOfApplication,regCerti,certiIncome
+                )
+            }
         }
+    }
+
+    private fun valid(name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , type: String?) : Boolean
+    {
+        if (name.isEmpty() || name.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter name")
+            return false
+        }
+        if (dob.isEmpty() || dob.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter dob")
+            return false
+        }
+        if (type != "3")
+        {
+            if (uid.isEmpty() || uid.isBlank())
+            {
+                Constant.error(this@CustomerDataActivity,"Please enter uid")
+                return false
+            }
+            if (uid.length < 12)
+            {
+                Constant.error(this@CustomerDataActivity,"UID is invalid")
+                return false
+            }
+        }
+        if (mob.isEmpty() || mob.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter Mobile No")
+            return false
+        }
+        if (mob.length < 10)
+        {
+            Constant.error(this@CustomerDataActivity,"Mobile No is not valid")
+            return false
+        }
+        if (house.isEmpty() || house.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter house")
+            return false
+        }
+        if (loc.isEmpty() || loc.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter loc")
+            return false
+        }
+        if (vtc.isEmpty() || vtc.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter vtc")
+            return false
+        }
+        if (district.isEmpty() || district.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter district")
+            return false
+        }
+        if (subDistrict.isEmpty() || subDistrict.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter subDistrict")
+            return false
+        }
+        if (state.isEmpty() || state.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter state")
+            return false
+        }
+        if (pincode.isEmpty() || pincode.isBlank())
+        {
+            Constant.error(this@CustomerDataActivity,"Please enter pincode")
+            return false
+        }
+        return true
+    }
+
+    fun String.toPlainRequestBody(): RequestBody {
+        return RequestBody.create("text/plain".toMediaTypeOrNull(), this)
     }
 
     private fun callupdateDetails(type: String?, name: String, dob: String, uid: String, mob: String, house: String, loc: String, vtc: String, district: String, subDistrict: String, state: String, pincode: String , customerNo : String, pan : String, gender : String, fatherName : String, dateOfApplication : String, regCerti : String, certiIncome : String) {
@@ -139,9 +212,9 @@ class CustomerDataActivity : AppCompatActivity() {
         }
 
         val data = AESCryptoUtil.encrypt(modelJson.toString().trimIndent())
-        val encryptedData = cleanEncryptedString(data)
+        val encryptedData = cleanEncryptedString(data).toPlainRequestBody()
 
-        Log.d("EncryptedData", encryptedData)
+        Log.d("EncryptedData", encryptedData.toString())
 
         try {
             RetrofitInstance.getInstance().updateDetails(encryptedData)
