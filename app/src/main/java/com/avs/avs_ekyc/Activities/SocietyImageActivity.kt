@@ -3,11 +3,13 @@ package com.avs.avs_ekyc.Activities
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
@@ -89,7 +91,7 @@ class SocietyImageActivity : AppCompatActivity() {
 
         val options = UCrop.Options().apply {
             setCompressionFormat(Bitmap.CompressFormat.JPEG)
-            setCompressionQuality(90)
+            setCompressionQuality(50)
             setFreeStyleCropEnabled(true)
         }
 
@@ -100,6 +102,7 @@ class SocietyImageActivity : AppCompatActivity() {
         cropImageLauncher.launch(uCrop.getIntent(this))
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySocietyImageBinding.inflate(layoutInflater)
@@ -137,6 +140,7 @@ class SocietyImageActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun uploadImages() {
         val progress = CustomProgressDialog(this)
         progress.show()
@@ -174,8 +178,13 @@ class SocietyImageActivity : AppCompatActivity() {
             put("file7", base64Images[3] ?: "")
         }
 
+     //  Constant.saveJsonToDownloads(this@SocietyImageActivity,modelJson)
+
         val encryptedData =
             cleanEncryptedString(AESCryptoUtil.encrypt(modelJson.toString())).toPlainRequestBody()
+
+      //  Constant.saveStringToDocuments(this@SocietyImageActivity,cleanEncryptedString(AESCryptoUtil.encrypt(modelJson.toString())))
+
 
         RetrofitInstance.getInstance().getImageCkyc(encryptedData)
             .enqueue(

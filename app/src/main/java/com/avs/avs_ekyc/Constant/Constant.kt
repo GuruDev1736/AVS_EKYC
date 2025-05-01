@@ -5,12 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.material.datepicker.MaterialDatePicker
 import es.dmoral.toasty.Toasty
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Base64
 import java.util.Date
@@ -83,4 +88,71 @@ object Constant {
             Toast.makeText(context, "Failed to create file", Toast.LENGTH_SHORT).show()
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun saveJsonToDownloads(context: Context, jsonObject: JSONObject, fileName: String = "request.json"): Uri? {
+        val resolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+
+        val documentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val fileUri = resolver.insert(documentUri, contentValues)
+
+        if (fileUri != null) {
+            resolver.openOutputStream(fileUri)?.use { outputStream ->
+                val jsonString = jsonObject.toString(4)
+                outputStream.write(jsonString.toByteArray())
+                outputStream.flush()
+            }
+
+            contentValues.clear()
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(fileUri, contentValues, null, null)
+
+            Log.d("JsonSave", "JSON saved to Documents: $fileUri")
+            return fileUri
+        } else {
+            Log.e("JsonSave", "Failed to save JSON to Documents")
+            return null
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun saveStringToDocuments(context: Context, content: Any, fileName: String = "data.txt"): Uri? {
+        val resolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+
+        val documentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val fileUri = resolver.insert(documentUri, contentValues)
+
+        if (fileUri != null) {
+            resolver.openOutputStream(fileUri)?.use { outputStream ->
+                val stringContent = content.toString()  // Convert Any to String
+                outputStream.write(stringContent.toByteArray())
+                outputStream.flush()
+            }
+
+            contentValues.clear()
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(fileUri, contentValues, null, null)
+
+            Log.d("StringSave", "Content saved to Documents: $fileUri")
+            return fileUri
+        } else {
+            Log.e("StringSave", "Failed to save content to Documents")
+            return null
+        }
+    }
+
+
 }
