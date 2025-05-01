@@ -120,7 +120,8 @@ class SocietyImageActivity : AppCompatActivity() {
         if (type == "3") {
             binding.textSociety.text = "Related Person Photo"
             val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
-            adapter = ImageGridAdapter(imageUris, imageNames) { index ->
+            val imagePlaceHolder = arrayOf(R.drawable.photo, R.drawable.pan, R.drawable.add_proof_front, R.drawable.add_proof_back)
+            adapter = ImageGridAdapter(this@SocietyImageActivity,imageUris, imageNames,imagePlaceHolder) { index ->
                 currentSlotIndex = index
                 showImagePickerDialog()
             }

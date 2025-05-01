@@ -1,5 +1,6 @@
 package com.avs.avs_ekyc.Adapter
 
+import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -8,11 +9,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.avs.avs_ekyc.R
+import com.bumptech.glide.Glide
 
 class ImageGridAdapter {
     class ImageGridAdapter(
+        private val context : Context,
         private val imageUris: Array<Uri?>,
         private val imageNames: Array<String>,
+        private val imagePlaceHolder : Array<Int>,
         private val onImageClick: (Int) -> Unit
     ) : RecyclerView.Adapter<ImageGridAdapter.ImageViewHolder>() {
 
@@ -32,8 +36,10 @@ class ImageGridAdapter {
         override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
             val uri = imageUris[position]
             val name = imageNames[position]
+            val placeHolder = imagePlaceHolder[position]
 
             holder.imageName.text = name
+            Glide.with(context).load(placeHolder).into(holder.imageSlot)
             if (uri != null) {
                 holder.imageSlot.setImageURI(uri)
             } else {

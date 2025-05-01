@@ -112,7 +112,8 @@ class IndivdualPhotoActivity : AppCompatActivity() {
         recyclerView = binding.rvImageGrid
 
         val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
-        adapter = ImageGridAdapter(imageUris,imageNames) { index ->
+        val imagePlaceHolders = arrayOf(R.drawable.photo, R.drawable.pan, R.drawable.add_proof_front, R.drawable.add_proof_back)
+        adapter = ImageGridAdapter(this@IndivdualPhotoActivity,imageUris,imageNames,imagePlaceHolders) { index ->
             currentSlotIndex = index
             showImagePickerDialog()
         }

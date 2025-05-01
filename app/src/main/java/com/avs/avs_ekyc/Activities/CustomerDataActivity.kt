@@ -351,7 +351,7 @@ class CustomerDataActivity : AppCompatActivity() {
                         progress.dismiss()
                         Constant.error(
                             this@CustomerDataActivity,
-                            "API error: ${t.localizedMessage}"
+                            "API error: ${t.message}"
                         )
                         Log.e("LoginError", t.message ?: "Unknown error")
                     }
