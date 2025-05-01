@@ -67,7 +67,10 @@ class CustomerDataActivity : AppCompatActivity() {
         when (type) {
             "1" -> binding.type.setText("Individual")
             "2" -> binding.type.setText("Minor")
-            "3" -> binding.type.setText("Legal")
+            "3" -> {
+                binding.type.setText("Legal")
+                binding.uidLayout.hint = "Reg No"
+            }
         }
 
         binding.custName.setText(name)

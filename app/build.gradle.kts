@@ -18,25 +18,37 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
+    viewBinding{
+        enable = true
+    }
+
     buildTypes {
-        release {
+        getByName("debug") {
+            isDebuggable = true
+            buildConfigField("String", "BASE_URL", "\"http://110.227.207.211:90/CKYCTEST_API/\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                file("proguard-rules.pro")
             )
+            buildConfigField("String", "BASE_URL", "\"https://junotes-prod.up.railway.app/\"")
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = "11"
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 }
 

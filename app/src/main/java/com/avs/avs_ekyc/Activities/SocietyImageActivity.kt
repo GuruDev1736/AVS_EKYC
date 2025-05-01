@@ -109,19 +109,15 @@ class SocietyImageActivity : AppCompatActivity() {
             finish()
         }
 
-        binding.actionBar.toolbar.title = "Society Photo"
+        binding.actionBar.toolbar.title = "Related Photo"
         recyclerView = binding.societyImages
 
         val type = intent.getStringExtra("type")
 
         if (type == "3") {
-            val societyImageNames = arrayOf(
-                "Registration of Certificate",
-                "Certificate of Incorporation / Formation",
-                "Pan Card",
-                "Address Proof"
-            )
-            adapter = ImageGridAdapter(imageUris, societyImageNames) { index ->
+            binding.textSociety.text = "Related Person Photo"
+            val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
+            adapter = ImageGridAdapter(imageUris, imageNames) { index ->
                 currentSlotIndex = index
                 showImagePickerDialog()
             }

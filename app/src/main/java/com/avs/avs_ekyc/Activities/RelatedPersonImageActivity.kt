@@ -105,22 +105,43 @@ class RelatedPersonImageActivity : AppCompatActivity() {
             finish()
         }
 
-        binding.actionBar.toolbar.title = "Related Person Photo"
+        val type = intent.getStringExtra("type")
+
+
         recyclerView = binding.relatedPersonDetails
 
-        val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
-        adapter = ImageGridAdapter(imageUris, imageNames) { index ->
-            currentSlotIndex = index
-            showImagePickerDialog()
+
+        if (type =="3")
+        {
+            binding.actionBar.toolbar.title = " Society Photo"
+            val societyImageNames = arrayOf(
+                "Registration of Certificate",
+                "Certificate of Incorporation / Formation",
+                "Pan Card",
+                "Address Proof"
+            )
+            adapter = ImageGridAdapter(imageUris, societyImageNames) { index ->
+                currentSlotIndex = index
+                showImagePickerDialog()
+            }
         }
+        else
+        {
+            binding.actionBar.toolbar.title = "Related Person Photo"
+            val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
+            adapter = ImageGridAdapter(imageUris, imageNames) { index ->
+                currentSlotIndex = index
+                showImagePickerDialog()
+            }
+        }
+
 
         recyclerView.layoutManager = GridLayoutManager(this, 2)
         recyclerView.adapter = adapter
 
 
-        val type = intent.getStringExtra("type")
-
         if (type == "3") {
+            binding.textRelated.text = "Society / Industry / Trusty Details"
             binding.relatedButton.text = "Next"
             binding.relatedButton.setOnClickListener {
 
