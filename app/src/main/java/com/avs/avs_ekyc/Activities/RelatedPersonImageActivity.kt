@@ -114,14 +114,8 @@ class RelatedPersonImageActivity : AppCompatActivity() {
         if (type =="3")
         {
             binding.actionBar.toolbar.title = " Society Photo"
-            val societyImageNames = arrayOf(
-                "Registration of Certificate",
-                "Certificate of Incorporation / Formation",
-                "Pan Card",
-                "Address Proof"
-            )
-            val imagePlaceHoler = arrayOf(R.drawable.registration_of_certificate, R.drawable.certificate_of_incorporation, R.drawable.pancard, R.drawable.adress_proof)
-            adapter = ImageGridAdapter(this@RelatedPersonImageActivity,imageUris, societyImageNames,imagePlaceHoler) { index ->
+            val imagePlaceHoler = arrayOf(R.drawable.registration_of_certificate, R.drawable.coi, R.drawable.pancard, R.drawable.adress_proof)
+            adapter = ImageGridAdapter(this@RelatedPersonImageActivity,imageUris,imagePlaceHoler) { index ->
                 currentSlotIndex = index
                 showImagePickerDialog()
             }
@@ -129,9 +123,8 @@ class RelatedPersonImageActivity : AppCompatActivity() {
         else
         {
             binding.actionBar.toolbar.title = "Related Person Photo"
-            val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
             val imagePlaceHolder = arrayOf(R.drawable.photo, R.drawable.pan, R.drawable.add_proof_front, R.drawable.add_proof_back)
-            adapter = ImageGridAdapter(this@RelatedPersonImageActivity,imageUris, imageNames,imagePlaceHolder) { index ->
+            adapter = ImageGridAdapter(this@RelatedPersonImageActivity,imageUris,imagePlaceHolder) { index ->
                 currentSlotIndex = index
                 showImagePickerDialog()
             }

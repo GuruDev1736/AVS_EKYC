@@ -98,6 +98,7 @@ class IndivdualPhotoActivity : AppCompatActivity() {
 
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityIndivdualPhotoBinding.inflate(layoutInflater)
@@ -111,9 +112,8 @@ class IndivdualPhotoActivity : AppCompatActivity() {
 
         recyclerView = binding.rvImageGrid
 
-        val imageNames = arrayOf("Photo", "PAN", "Add Proof Front", "Add Proof Back")
         val imagePlaceHolders = arrayOf(R.drawable.photo, R.drawable.pan, R.drawable.add_proof_front, R.drawable.add_proof_back)
-        adapter = ImageGridAdapter(this@IndivdualPhotoActivity,imageUris,imageNames,imagePlaceHolders) { index ->
+        adapter = ImageGridAdapter(this@IndivdualPhotoActivity,imageUris,imagePlaceHolders) { index ->
             currentSlotIndex = index
             showImagePickerDialog()
         }

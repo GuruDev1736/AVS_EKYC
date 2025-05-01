@@ -15,14 +15,12 @@ class ImageGridAdapter {
     class ImageGridAdapter(
         private val context : Context,
         private val imageUris: Array<Uri?>,
-        private val imageNames: Array<String>,
         private val imagePlaceHolder : Array<Int>,
         private val onImageClick: (Int) -> Unit
     ) : RecyclerView.Adapter<ImageGridAdapter.ImageViewHolder>() {
 
         inner class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val imageSlot: ImageView = itemView.findViewById(R.id.imageSlot)
-            val imageName : TextView = itemView.findViewById(R.id.imageText)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
@@ -35,15 +33,16 @@ class ImageGridAdapter {
 
         override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
             val uri = imageUris[position]
-            val name = imageNames[position]
             val placeHolder = imagePlaceHolder[position]
 
-            holder.imageName.text = name
-            Glide.with(context).load(placeHolder).into(holder.imageSlot)
             if (uri != null) {
-                holder.imageSlot.setImageURI(uri)
+                Glide.with(context)
+                    .load(uri)
+                    .placeholder(placeHolder)
+                    .error(android.R.drawable.ic_menu_camera)
+                    .into(holder.imageSlot)
             } else {
-                holder.imageSlot.setImageResource(android.R.drawable.ic_menu_camera)
+                holder.imageSlot.setImageResource(placeHolder)
             }
 
             holder.imageSlot.setOnClickListener {

@@ -142,10 +142,14 @@ class GetCustomerInformationActivity : AppCompatActivity() {
                                             )
                                         }
                                     } else {
-                                        Constant.error(
-                                            this@GetCustomerInformationActivity,
-                                            "Invalid response format"
-                                        )
+                                        if(decryptedResponse.trim().startsWith("{")){
+                                            val jsonObject = JSONObject(decryptedResponse)
+                                            val status = jsonObject.getString("Status")
+                                            Constant.error(
+                                                this@GetCustomerInformationActivity,
+                                                status
+                                            )
+                                        }
                                         Log.e("Error", "Decrypted response is not a JSONArray")
                                     }
                                 }catch (e : Exception)

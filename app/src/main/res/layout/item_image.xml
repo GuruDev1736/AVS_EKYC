@@ -4,16 +4,6 @@
     android:orientation="vertical"
     android:layout_margin="8dp">
 
-    <TextView
-        android:id="@+id/imageText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ImageName"
-        android:textSize="18dp"
-        android:textColor="@color/black"
-        android:gravity="center"
-        android:paddingBottom="8dp" />
-
     <ImageView
         android:id="@+id/imageSlot"
         android:layout_width="150dp"
