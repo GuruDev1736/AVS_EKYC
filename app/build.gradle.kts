@@ -38,7 +38,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 file("proguard-rules.pro")
             )
-            buildConfigField("String", "BASE_URL", "\"https://junotes-prod.up.railway.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://ckyc.tbsbl.com/TBSBCKYC_APP/\"")
         }
     }
 
