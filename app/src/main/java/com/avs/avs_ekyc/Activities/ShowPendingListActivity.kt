@@ -112,11 +112,7 @@ class ShowPendingListActivity : AppCompatActivity() {
 
                     override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
                         progress.dismiss()
-                        if (t is IOException) {
-                            Constant.error(this@ShowPendingListActivity, "Network issue. Check connection.")
-                        } else {
-                            Constant.error(this@ShowPendingListActivity, "API error: ${t.localizedMessage}")
-                        }
+                        Constant.error(this@ShowPendingListActivity, "Network error : ${t.message}")
                         Log.e("LoginError", t.message ?: "Unknown error")
                     }
                 })

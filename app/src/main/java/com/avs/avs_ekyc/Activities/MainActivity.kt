@@ -155,11 +155,7 @@ class MainActivity : AppCompatActivity() {
 
                     override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
                         progress.dismiss()
-                        if (t is IOException) {
-                            Constant.error(this@MainActivity, "Network issue. Check connection.")
-                        } else {
-                            Constant.error(this@MainActivity, "API error: ${t.localizedMessage}")
-                        }
+                        Constant.error(this@MainActivity, "Network error : ${t.message}")
                         Log.e("LoginError", t.message ?: "Unknown error")
                     }
                 })

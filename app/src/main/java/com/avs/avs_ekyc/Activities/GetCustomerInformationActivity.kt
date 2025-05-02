@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.avs.avs_ekyc.Activities.MainActivity
 import com.avs.avs_ekyc.Activities.ShowPendingListActivity
 import com.avs.avs_ekyc.Adapter.PendingListAdapter
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
@@ -163,11 +164,7 @@ class GetCustomerInformationActivity : AppCompatActivity() {
 
                     override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
                         progress.dismiss()
-                        if (t is IOException) {
-                            Constant.error(this@GetCustomerInformationActivity, "Network issue. Check connection.")
-                        } else {
-                            Constant.error(this@GetCustomerInformationActivity, "API error: ${t.localizedMessage}")
-                        }
+                        Constant.error(this@GetCustomerInformationActivity, "Network error : ${t.message}")
                         Log.e("Error", t.message ?: "Unknown error")
                     }
                 })
