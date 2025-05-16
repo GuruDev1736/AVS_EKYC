@@ -2,6 +2,8 @@ package com.avs.avs_ekyc.Activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.StrictMode
+import android.text.Html
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
@@ -11,12 +13,18 @@ import com.avs.avs_ekyc.Constant.SharedPreferenceManager
 import com.avs.avs_ekyc.Model.UniversalResponseModel
 import com.avs.avs_ekyc.databinding.ActivityMainBinding
 import com.taskease.yksfoundation.Retrofit.RetrofitInstance
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import okio.IOException
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,35 +40,9 @@ class MainActivity : AppCompatActivity() {
         binding.edtUsername.setText(SharedPreferenceManager.getString(SharedPreferenceManager.USERNAME))
         binding.edtPassword.setText(SharedPreferenceManager.getString(SharedPreferenceManager.PASSWORD))
 
-        val message = "X5GQQibbtZ35AOds+LgTe/E4X71uD+C8rzNOfnEl9IGGBLMwSbhTDcyhRG0BwN1gUdYAuLa0ek813DxCdXeNlwsK536sbCbdEkaO1u39hBnLwNIIsn2qwjneWaCvg2Hgs0xKxSf6wtpvDkfwIVsab/q7SGuXMWg0ES0jkm7k/3e2bjmotsMRcjS2G6BGMaHaqh0/UA6NqFi/ksIlaJjfsAn6A+4+h7UOZRjPIzp1cBqxoKpqWO9wJhJuKsVfx5s608A3RFa57n5E08wupsyh/+K+vWRf4/sOlT7FEwnDCX70SS+M3C9x12eLl4lV58H4BgpnGquzkSIKlt4JmU1ASAEdME9dPhUnrCRFGyDJQTX6fwbfAaLewrh0k2O4ffNriS6pAxEZk6VMDUu3B+o9VQ4rDJd8y9QLeAq4ENf1XAXB61O8MoYvKWdo1DvpmRdXrd5Q5zAV5q2CJzKyYJIpqea3t7nbVw7tmJdt9RhRF1ju4QNsjfQS3DGxn2HB8WRtjjtJi7btM0CqczWAeK++b3plGBfH/XaOXCH6w/BSdgSbrYvTV2LQ/ZxiljBUTP478y/msAmroqk7+KC/cvcTR5L0Q1MZL4GgQxLg1uptXDN6IhtxaYFikL4B9OTR+89APkX8RvRRh2WYIZLttvMeZ6sEpEUQuXybWyTPXDSOZ6m2lwg17EkYXHFTJsL+eYjVFg4WPxOfvEgXo6gsdNQLJRBe6w4RJMaI8Ju+O38DW/+gy2mjUROWnLDkDzdRQT7HV4pQz6EzawucVcw2ZVyD7j5kvPrx29m8VkbXiJk/p8LJfcwIAPql2d4vqjfTmXS8xyfSsy4QnMP03LnZXtysPGt+dHNuRsAEMXQdTOcr1jSupPe4aXwpPrm7rS/VzvDV+xzzjDLuIDLanaau7Z+5/+7dhGVR9220HSjgjlU+FzI\u003d"
-        val decryptedMessage = AESCryptoUtil.decrypt(message)
-        Log.d("DecryptedMessage", decryptedMessage.toString())
-
-
-        val jsonData = JSONObject().apply {
-            put("AdharNO", "0")
-            put("Adressline1", " ")
-            put("Adressline2", "  ")
-            put("Adressline3", "  ")
-            put("Agentcode", "6016")
-            put("CITY", "Nagpur")
-            put("CUSTNAME", "VARADKAR BHIKAJI YELOJI")
-            put("Certi_Inco", "")
-            put("DISTRICT", "Nagpur")
-            put("DOB", "01/01/1900")
-            put("DateOfApplication", "")
-            put("FatherName", "")
-            put("Gender", "")
-            put("MOBNO", "")
-            put("PANNO", "")
-            put("Pincode", "440003")
-            put("RegiCerti", "")
-            put("Statecode", "MH")
-            put("custNo", "114431")
-        }
-
-        val encryptedMessage = AESCryptoUtil.encrypt(jsonData.toString())
-        Log.d("EncryptedMessage", encryptedMessage)
+//        val message = "IURaC3mQe7H+nK1+VCX7rHls5ziDA6CRIUwxx+USG7ImS0zIwRd6S3iFnQCmWu9+"
+//        val decryptedMessage = AESCryptoUtil.decrypt(message)
+//        Log.d("DecryptedMessage", decryptedMessage.toString())
 
         binding.btnLogin.setOnClickListener {
             val username = binding.edtUsername.text.toString()
@@ -68,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
             if (valid(username,password))
             {
-                callLogin(username,password)
+                fetchEncryptedValue(username,password)
             }
         }
     }
@@ -88,81 +70,93 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun callLogin(username: String, password: String) {
-        val progress = CustomProgressDialog(this)
-        progress.show()
+    fun fetchEncryptedValue(username: String , password: String) {
+        Thread {
+            val loginParams = "UserName=$username&Password=$password"
+            val encryptedData = AESCryptoUtil.encrypt(loginParams)
+            val urlString = "https://ckyc.tbsbl.com/TBSBCKYC_APP/Login1.aspx?data=$encryptedData"
 
-        val loginParams = "UserName=$username&Password=$password"
-        val encryptedData = AESCryptoUtil.encrypt(loginParams)
+            try {
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
 
-        try {
-            RetrofitInstance.getInstance().login(encryptedData)
-                .enqueue(object : Callback<UniversalResponseModel> {
-                    override fun onResponse(call: Call<UniversalResponseModel>, response: Response<UniversalResponseModel>) {
-                        progress.dismiss()
+                val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                val response = StringBuilder()
+                var line: String?
 
-                        if (response.isSuccessful) {
-                            val encryptedResponse = response.body()?.encrypted
-                            val decryptedResponse = AESCryptoUtil.decrypt((encryptedResponse ?: ""))
+                while (reader.readLine().also { line = it } != null) {
+                    response.append(line)
+                }
+                reader.close()
 
-                            Log.d("EncryptedRes", (encryptedResponse ?: "null"))
-                            Log.d("DecryptedRes", decryptedResponse ?: "null")
+                val html = response.toString()
 
-                            if (!decryptedResponse.isNullOrEmpty()) {
-                                try {
-                                    if (decryptedResponse.trim().startsWith("{")) {
-                                        val jsonObject = JSONObject(decryptedResponse)
-                                        val status = jsonObject.getString("Status")
-                                        val bankName = jsonObject.getString("BankName")
-                                        val agentName = jsonObject.getString("Agent_Name")
-                                        val agentNo = jsonObject.getString("Agent_No")
+                // Extract JSON string from HTML <p> tag
+                val start = html.indexOf("{")
+                val end = html.lastIndexOf("}") + 1
+                val encodedJson = html.substring(start, end)
 
-                                        if (status.equals("Success", ignoreCase = true)) {
+                // Decode HTML entities like &quot; => "
+                val decodedJson = Html.fromHtml(encodedJson, Html.FROM_HTML_MODE_LEGACY).toString()
 
-                                            SharedPreferenceManager.saveString(
-                                                SharedPreferenceManager.AGENT_NO , agentNo)
+                // Parse JSON
+                val jsonObject = JSONObject(decodedJson)
+                val encryptedValue = jsonObject.getString("encrypted")
 
-                                            SharedPreferenceManager.saveString(
-                                                SharedPreferenceManager.USERNAME,username)
-                                            SharedPreferenceManager.saveString(
-                                                SharedPreferenceManager.PASSWORD,password)
+                // Use result on UI thread
+                runOnUiThread {
+                    val decryptedResponse = AESCryptoUtil.decrypt((encryptedValue ?: ""))
 
-                                            Constant.success(this@MainActivity, "Login successful")
-                                            startActivity(Intent(this@MainActivity,
-                                                DashboardActivity::class.java)
-                                                .putExtra("bank_name",bankName)
-                                                .putExtra("agent_name",agentName)
-                                            )
-                                            finish()
-                                        } else {
-                                            Constant.error(this@MainActivity, "Login failed")
-                                        }
-                                    } else {
-                                        Constant.error(this@MainActivity, decryptedResponse)
-                                        Log.e("LoginError", "Decrypted response is not JSON")
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("JSON Error", e.message ?: "Parsing error")
-                                    Constant.error(this@MainActivity, "Parsing error")
+                    Log.d("EncryptedRes", (encryptedValue ?: "null"))
+                    Log.d("DecryptedRes", decryptedResponse ?: "null")
+
+                    if (!decryptedResponse.isNullOrEmpty()) {
+                        try {
+                            if (decryptedResponse.trim().startsWith("{")) {
+                                val jsonObject = JSONObject(decryptedResponse)
+                                val status = jsonObject.getString("Status")
+                                val bankName = jsonObject.getString("BankName")
+                                val agentName = jsonObject.getString("Agent_Name")
+                                val agentNo = jsonObject.getString("Agent_No")
+
+                                if (status.equals("Success", ignoreCase = true)) {
+
+                                    SharedPreferenceManager.saveString(
+                                        SharedPreferenceManager.AGENT_NO , agentNo)
+
+                                    SharedPreferenceManager.saveString(
+                                        SharedPreferenceManager.USERNAME,username)
+                                    SharedPreferenceManager.saveString(
+                                        SharedPreferenceManager.PASSWORD,password)
+
+                                    Constant.success(this@MainActivity, "Login successful")
+                                    startActivity(Intent(this@MainActivity,
+                                        DashboardActivity::class.java)
+                                        .putExtra("bank_name",bankName)
+                                        .putExtra("agent_name",agentName)
+                                    )
+                                    finish()
+                                } else {
+                                    Constant.error(this@MainActivity, "Login failed")
                                 }
                             } else {
-                                Constant.error(this@MainActivity, "Empty response from server")
+                                Constant.error(this@MainActivity, decryptedResponse)
+                                Log.e("LoginError", "Decrypted response is not JSON")
                             }
-                        } else {
-                            Constant.error(this@MainActivity, "Server returned error")
+                        } catch (e: Exception) {
+                            Log.e("JSON Error", e.message ?: "Parsing error")
+                            Constant.error(this@MainActivity, "Parsing error")
                         }
+                    } else {
+                        Constant.error(this@MainActivity, "Empty response from server")
                     }
+                }
 
-                    override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
-                        progress.dismiss()
-                        Constant.error(this@MainActivity, "Network error : ${t.message}")
-                        Log.e("LoginError", t.message ?: "Unknown error")
-                    }
-                })
-        } catch (e: Exception) {
-            progress.dismiss()
-            Log.e("LoginException", e.message ?: "Exception")
-            Constant.error(this@MainActivity, "Unexpected error occurred")
-        }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("HTTP_ERROR", "Error fetching data: ${e.message}")
+            }
+        }.start()
     }
 }

@@ -74,4 +74,6 @@ dependencies {
     implementation ("com.guolindev.permissionx:permissionx:1.8.1")
     implementation ("de.hdodenhof:circleimageview:3.1.0")
     implementation ("com.github.yalantis:ucrop:2.2.8")
+    implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
+
 }

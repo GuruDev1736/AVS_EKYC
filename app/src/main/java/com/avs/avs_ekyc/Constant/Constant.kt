@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.Html
 import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
@@ -154,5 +155,20 @@ object Constant {
         }
     }
 
+    fun parseHtmlToJson(htmlResponse: String): JSONObject {
+        // Extract the <p> content manually (since the structure is known)
+        val regex = "<p>(.*?)</p>".toRegex()
+        val match = regex.find(htmlResponse)
+        val encodedJson = match?.groups?.get(1)?.value ?: ""
 
+        // Convert HTML entities (e.g., &quot;) to normal characters
+        val jsonString = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.fromHtml(encodedJson, Html.FROM_HTML_MODE_LEGACY).toString()
+        } else {
+            Html.fromHtml(encodedJson).toString()
+        }
+
+        // Convert to JSONObject
+        return JSONObject(jsonString)
+    }
 }
