@@ -294,6 +294,9 @@ class RelatedPersonImageActivity : AppCompatActivity() {
 
     private fun uploadImages(encryptedValue: String) {
         val decryptedResponse = AESCryptoUtil.decrypt(encryptedValue ?: "")
+
+        Log.d("DECRYPTED_RESPONSE", decryptedResponse ?: "")
+
         if (!decryptedResponse.isNullOrEmpty() && decryptedResponse.trim().startsWith("{")) {
             val jsonObject = JSONObject(decryptedResponse)
             val status = jsonObject.optString("message")
