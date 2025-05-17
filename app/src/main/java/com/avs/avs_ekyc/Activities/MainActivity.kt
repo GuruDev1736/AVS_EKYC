@@ -29,11 +29,14 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityMainBinding
+    private lateinit var progress : CustomProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        progress = CustomProgressDialog(this@MainActivity)
 
         SharedPreferenceManager.init(this)
 
@@ -72,6 +75,11 @@ class MainActivity : AppCompatActivity() {
 
     fun fetchEncryptedValue(username: String , password: String) {
         Thread {
+
+            runOnUiThread {
+                progress.show()
+            }
+
             val loginParams = "UserName=$username&Password=$password"
             val encryptedData = AESCryptoUtil.encrypt(loginParams)
             val urlString = "https://ckyc.tbsbl.com/TBSBCKYC_APP/Login1.aspx?data=$encryptedData"
@@ -106,51 +114,8 @@ class MainActivity : AppCompatActivity() {
 
                 // Use result on UI thread
                 runOnUiThread {
-                    val decryptedResponse = AESCryptoUtil.decrypt((encryptedValue ?: ""))
-
-                    Log.d("EncryptedRes", (encryptedValue ?: "null"))
-                    Log.d("DecryptedRes", decryptedResponse ?: "null")
-
-                    if (!decryptedResponse.isNullOrEmpty()) {
-                        try {
-                            if (decryptedResponse.trim().startsWith("{")) {
-                                val jsonObject = JSONObject(decryptedResponse)
-                                val status = jsonObject.getString("Status")
-                                val bankName = jsonObject.getString("BankName")
-                                val agentName = jsonObject.getString("Agent_Name")
-                                val agentNo = jsonObject.getString("Agent_No")
-
-                                if (status.equals("Success", ignoreCase = true)) {
-
-                                    SharedPreferenceManager.saveString(
-                                        SharedPreferenceManager.AGENT_NO , agentNo)
-
-                                    SharedPreferenceManager.saveString(
-                                        SharedPreferenceManager.USERNAME,username)
-                                    SharedPreferenceManager.saveString(
-                                        SharedPreferenceManager.PASSWORD,password)
-
-                                    Constant.success(this@MainActivity, "Login successful")
-                                    startActivity(Intent(this@MainActivity,
-                                        DashboardActivity::class.java)
-                                        .putExtra("bank_name",bankName)
-                                        .putExtra("agent_name",agentName)
-                                    )
-                                    finish()
-                                } else {
-                                    Constant.error(this@MainActivity, "Login failed")
-                                }
-                            } else {
-                                Constant.error(this@MainActivity, decryptedResponse)
-                                Log.e("LoginError", "Decrypted response is not JSON")
-                            }
-                        } catch (e: Exception) {
-                            Log.e("JSON Error", e.message ?: "Parsing error")
-                            Constant.error(this@MainActivity, "Parsing error")
-                        }
-                    } else {
-                        Constant.error(this@MainActivity, "Empty response from server")
-                    }
+                    progress.dismiss()
+                    callLogin(encryptedValue , username , password)
                 }
 
             } catch (e: Exception) {
@@ -158,5 +123,53 @@ class MainActivity : AppCompatActivity() {
                 Log.e("HTTP_ERROR", "Error fetching data: ${e.message}")
             }
         }.start()
+    }
+
+    private fun callLogin(encryptedValue: String , username: String , password: String) {
+        val decryptedResponse = AESCryptoUtil.decrypt((encryptedValue ?: ""))
+
+        Log.d("EncryptedRes", (encryptedValue ?: "null"))
+        Log.d("DecryptedRes", decryptedResponse ?: "null")
+
+        if (!decryptedResponse.isNullOrEmpty()) {
+            try {
+                if (decryptedResponse.trim().startsWith("{")) {
+                    val jsonObject = JSONObject(decryptedResponse)
+                    val status = jsonObject.getString("Status")
+                    val bankName = jsonObject.getString("BankName")
+                    val agentName = jsonObject.getString("Agent_Name")
+                    val agentNo = jsonObject.getString("Agent_No")
+
+                    if (status.equals("Success", ignoreCase = true)) {
+
+                        SharedPreferenceManager.saveString(
+                            SharedPreferenceManager.AGENT_NO , agentNo)
+
+                        SharedPreferenceManager.saveString(
+                            SharedPreferenceManager.USERNAME,username)
+                        SharedPreferenceManager.saveString(
+                            SharedPreferenceManager.PASSWORD,password)
+
+                        Constant.success(this@MainActivity, "Login successful")
+                        startActivity(Intent(this@MainActivity,
+                            DashboardActivity::class.java)
+                            .putExtra("bank_name",bankName)
+                            .putExtra("agent_name",agentName)
+                        )
+                        finish()
+                    } else {
+                        Constant.error(this@MainActivity, "Login failed")
+                    }
+                } else {
+                    Constant.error(this@MainActivity, decryptedResponse)
+                    Log.e("LoginError", "Decrypted response is not JSON")
+                }
+            } catch (e: Exception) {
+                Log.e("JSON Error", e.message ?: "Parsing error")
+                Constant.error(this@MainActivity, "Parsing error")
+            }
+        } else {
+            Constant.error(this@MainActivity, "Empty response from server")
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.util.Base64
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.avs.avs_ekyc.Activities.RelatedPersonImageActivity
 import com.avs.avs_ekyc.Adapter.ImageGridAdapter.ImageGridAdapter
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
 import com.avs.avs_ekyc.Constant.Constant
@@ -35,7 +37,12 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.DataOutputStream
 import java.io.File
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,6 +56,7 @@ class SocietyImageActivity : AppCompatActivity() {
     private val imageUris = arrayOfNulls<Uri>(4)
     private val base64Images = arrayOfNulls<String>(4)
     private val indivdualBase64Images = arrayOfNulls<String>(4)
+    private lateinit var progressDialog: CustomProgressDialog
 
 
     private var currentSlotIndex = -1
@@ -107,6 +115,7 @@ class SocietyImageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySocietyImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        progressDialog = CustomProgressDialog(this@SocietyImageActivity)
 
         binding.actionBar.toolbar.setNavigationOnClickListener {
             finish()
@@ -119,11 +128,17 @@ class SocietyImageActivity : AppCompatActivity() {
 
         if (type == "3") {
             binding.textSociety.text = "Related Person Photo"
-            val imagePlaceHolder = arrayOf(R.drawable.photo, R.drawable.pan, R.drawable.add_proof_front, R.drawable.add_proof_back)
-            adapter = ImageGridAdapter(this@SocietyImageActivity,imageUris,imagePlaceHolder) { index ->
-                currentSlotIndex = index
-                showImagePickerDialog()
-            }
+            val imagePlaceHolder = arrayOf(
+                R.drawable.photo,
+                R.drawable.pan,
+                R.drawable.add_proof_front,
+                R.drawable.add_proof_back
+            )
+            adapter =
+                ImageGridAdapter(this@SocietyImageActivity, imageUris, imagePlaceHolder) { index ->
+                    currentSlotIndex = index
+                    showImagePickerDialog()
+                }
 
             recyclerView.layoutManager = GridLayoutManager(this, 2)
             recyclerView.adapter = adapter
@@ -132,7 +147,7 @@ class SocietyImageActivity : AppCompatActivity() {
 
             binding.societyButton.setOnClickListener {
                 if (base64Images.all { it != null }) {
-                    uploadImages()
+                    fetchEncryptedValue()
                 } else {
                     Constant.error(this, "Please select all images")
                 }
@@ -140,102 +155,136 @@ class SocietyImageActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun uploadImages() {
-        val progress = CustomProgressDialog(this)
-        progress.show()
 
-        val agentNo = SharedPreferenceManager.getString(SharedPreferenceManager.AGENT_NO)
-        val customerNo = intent.getStringExtra("customerNo")
-        val type = intent.getStringExtra("type")
+    fun fetchEncryptedValue() {
+        Thread {
 
-        val imagePath = intent.getStringExtra("relatedPersonImageFilePath")
-        val joinedImages = imagePath?.let { File(it).readText() }
-        val individualPhotos = joinedImages?.split("||")?.toTypedArray()
-        if (individualPhotos != null) {
-            for (i in individualPhotos.indices) {
-                if (individualPhotos[i].isNotEmpty()) {
-                    indivdualBase64Images[i] = individualPhotos[i]
+            runOnUiThread {
+                progressDialog.show()
+            }
+
+            val agentNo = SharedPreferenceManager.getString(SharedPreferenceManager.AGENT_NO)
+            val customerNo = intent.getStringExtra("customerNo")
+            val type = intent.getStringExtra("type")
+
+            val imagePath = intent.getStringExtra("relatedPersonImageFilePath")
+            val joinedImages = imagePath?.let { File(it).readText() }
+            val individualPhotos = joinedImages?.split("||")?.toTypedArray()
+            if (individualPhotos != null) {
+                for (i in individualPhotos.indices) {
+                    if (individualPhotos[i].isNotEmpty()) {
+                        indivdualBase64Images[i] = individualPhotos[i]
+                    }
                 }
             }
-        }
 
-        val modelJson = JSONObject().apply {
-            put("custNo", customerNo.toString())
-            put("Agentcode", agentNo.toString())
-            put("type", type)
-            put("legalRemark", "")
-            put("ScietyRemarkType", "")
-            put("relatedRemark", "")
-            put("RelatedRemarkType", "")
-            put("file", indivdualBase64Images.getOrNull(0) ?: "")
-            put("file1", indivdualBase64Images.getOrNull(1) ?: "")
-            put("file2", indivdualBase64Images.getOrNull(2) ?: "")
-            put("file3", indivdualBase64Images.getOrNull(3) ?: "")
-            put("file4", base64Images[0] ?: "")
-            put("file5", base64Images[1] ?: "")
-            put("file6", base64Images[2] ?: "")
-            put("file7", base64Images[3] ?: "")
-        }
+            val modelJson = JSONObject().apply {
+                put("custNo", customerNo.toString())
+                put("Agentcode", agentNo.toString())
+                put("type", type)
+                put("legalRemark", "")
+                put("ScietyRemarkType", "")
+                put("relatedRemark", "")
+                put("RelatedRemarkType", "")
+                put("file", indivdualBase64Images.getOrNull(0) ?: "")
+                put("file1", indivdualBase64Images.getOrNull(1) ?: "")
+                put("file2", indivdualBase64Images.getOrNull(2) ?: "")
+                put("file3", indivdualBase64Images.getOrNull(3) ?: "")
+                put("file4", base64Images[0] ?: "")
+                put("file5", base64Images[1] ?: "")
+                put("file6", base64Images[2] ?: "")
+                put("file7", base64Images[3] ?: "")
+            }
 
-     //  Constant.saveJsonToDownloads(this@SocietyImageActivity,modelJson)
+            //  Constant.saveJsonToDownloads(this@SocietyImageActivity,modelJson)
 
-        val encryptedData =
-            cleanEncryptedString(AESCryptoUtil.encrypt(modelJson.toString())).toPlainRequestBody()
+            val encryptedData =
+                cleanEncryptedString(AESCryptoUtil.encrypt(modelJson.toString()))
 
-      //  Constant.saveStringToDocuments(this@SocietyImageActivity,cleanEncryptedString(AESCryptoUtil.encrypt(modelJson.toString())))
+            val urlString = "https://ckyc.tbsbl.com/TBSBCKYC_APP/ImageScanner.asmx/getImageCkyc"
+
+            try {
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("Content-Type", "text/plain")
+                connection.setRequestProperty("Accept", "text/html")
 
 
-        RetrofitInstance.getInstance().getImageCkyc(encryptedData)
-            .enqueue(
-                object : Callback<UniversalResponseModel> {
-                    override fun onResponse(
-                        call: Call<UniversalResponseModel>,
-                        response: Response<UniversalResponseModel>
-                    ) {
-                        progress.dismiss()
-                        if (response.isSuccessful) {
-                            val encryptedResponse = response.body()?.encrypted
-                            val decryptedResponse = AESCryptoUtil.decrypt(encryptedResponse ?: "")
-                            Log.d("DECRYPT_RESPONSE", decryptedResponse.toString())
-                            if (!decryptedResponse.isNullOrEmpty() && decryptedResponse.trim()
-                                    .startsWith("{")
-                            ) {
-                                val jsonObject = JSONObject(decryptedResponse)
-                                val status = jsonObject.optString("message")
+                // Write the POST data to the output stream
+                val outputStream = DataOutputStream(connection.outputStream)
+                outputStream.writeBytes(encryptedData)
+                outputStream.flush()
+                outputStream.close()
 
-                                if (status.equals("Success", ignoreCase = true)) {
-                                    Constant.success(
-                                        this@SocietyImageActivity,
-                                        "Image Uploaded Successfully"
-                                    )
-                                    startActivity(
-                                        Intent(
-                                            this@SocietyImageActivity,
-                                            ShowPendingListActivity::class.java
-                                        )
-                                            .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    )
-                                } else {
-                                    Constant.error(this@SocietyImageActivity, status)
-                                }
-                            } else {
-                                Constant.error(this@SocietyImageActivity, "Invalid response")
-                            }
-                        } else {
-                            Constant.error(this@SocietyImageActivity, "Server error")
-                        }
-                    }
+                // Read the response
+                val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                val response = StringBuilder()
+                var line: String?
 
-                    override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
-                        progress.dismiss()
-                        Constant.error(
-                            this@SocietyImageActivity,
-                            "Failed: ${t.localizedMessage}"
-                        )
-                    }
-                })
+                while (reader.readLine().also { line = it } != null) {
+                    response.append(line)
+                }
+                reader.close()
+
+                val html = response.toString()
+
+                // Extract JSON string from HTML <p> tag
+                val start = html.indexOf("{")
+                val end = html.lastIndexOf("}") + 1
+                val encodedJson = html.substring(start, end)
+
+                // Decode HTML entities like &quot; => "
+                val decodedJson = Html.fromHtml(encodedJson, Html.FROM_HTML_MODE_LEGACY).toString()
+
+                // Parse JSON
+                val jsonObject = JSONObject(decodedJson)
+                val encryptedValue = jsonObject.getString("encrypted")
+
+                // Use result on UI thread
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    uploadImages(encryptedValue)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("HTTP_ERROR", "Error fetching data: ${e.message}")
+            }
+        }.start()
     }
+
+
+    private fun uploadImages(encryptedValue: String) {
+        val decryptedResponse = AESCryptoUtil.decrypt(encryptedValue ?: "")
+        Log.d("DECRYPT_RESPONSE", decryptedResponse.toString())
+        if (!decryptedResponse.isNullOrEmpty() && decryptedResponse.trim()
+                .startsWith("{")
+        ) {
+            val jsonObject = JSONObject(decryptedResponse)
+            val status = jsonObject.optString("message")
+
+            if (status.equals("Success", ignoreCase = true)) {
+                Constant.success(
+                    this@SocietyImageActivity,
+                    "Image Uploaded Successfully"
+                )
+                startActivity(
+                    Intent(
+                        this@SocietyImageActivity,
+                        ShowPendingListActivity::class.java
+                    )
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            } else {
+                Constant.error(this@SocietyImageActivity, status)
+            }
+        } else {
+            Constant.error(this@SocietyImageActivity, "Invalid response")
+        }
+    }
+
 
     private fun cleanEncryptedString(dirtyString: String): String {
         return dirtyString.replace("\n", "").replace("\\u003d", "=").replace("\"", "")

@@ -2,6 +2,7 @@ package com.avs.avs_ekyc.Activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.avs.avs_ekyc.Constant.AESCryptoUtil
@@ -18,15 +19,23 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 class CustomerDataActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCustomerDataBinding
+    private lateinit var progressDialog: CustomProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCustomerDataBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        progressDialog = CustomProgressDialog(this@CustomerDataActivity)
 
         binding.actionBar.toolbar.setNavigationOnClickListener {
             finish()
@@ -114,7 +123,7 @@ class CustomerDataActivity : AppCompatActivity() {
                     type
                 )
             ) {
-                callupdateDetails(
+                fetchEncryptedValue(
                     type,
                     name,
                     dob,
@@ -214,7 +223,8 @@ class CustomerDataActivity : AppCompatActivity() {
         return RequestBody.create("text/plain".toMediaTypeOrNull(), this)
     }
 
-    private fun callupdateDetails(
+
+    fun fetchEncryptedValue(
         type: String?,
         name: String,
         dob: String,
@@ -235,131 +245,158 @@ class CustomerDataActivity : AppCompatActivity() {
         regCerti: String,
         certiIncome: String
     ) {
-        val progress = CustomProgressDialog(this)
-        progress.show()
+        Thread {
 
-        val agentNo = SharedPreferenceManager.getString(SharedPreferenceManager.AGENT_NO)
+            runOnUiThread {
+                progressDialog.show()
+            }
 
-        val modelJson = JSONObject().apply {
-            put("custNo", customerNo.toString())
-            put("CUSTNAME", name.toString())
-            put("DOB", dob.toString())
-            put("MOBNO", mob.toString())
-            put("PANNO", pan.toString())
-            put("AdharNO", uid.toString())
-            put("Adreessline1", house.toString())
-            put("Adreessline2", loc.toString())
-            put("Adreessline3", vtc.toString())
-            put("DISTRICT", district.toString())
-            put("CITY", subDistrict.toString())
-            put("Statecode", state.toString())
-            put("Pincode", pincode.toString())
-            put("Gender", gender.toString())
-            put("FatherName", fatherName.toString())
-            put("Agentcode", agentNo.toString())
-            put("DateOfApplication", dateOfApplication.toString())
-            put("RegiCerti", regCerti.toString())
-            put("Certi_Inco", certiIncome.toString())
-        }
+            val agentNo = SharedPreferenceManager.getString(SharedPreferenceManager.AGENT_NO)
 
-        val data = AESCryptoUtil.encrypt(modelJson.toString().trimIndent())
-        val encryptedData = cleanEncryptedString(data).toPlainRequestBody()
+            val modelJson = JSONObject().apply {
+                put("custNo", customerNo.toString())
+                put("CUSTNAME", name.toString())
+                put("DOB", dob.toString())
+                put("MOBNO", mob.toString())
+                put("PANNO", pan.toString())
+                put("AdharNO", uid.toString())
+                put("Adreessline1", house.toString())
+                put("Adreessline2", loc.toString())
+                put("Adreessline3", vtc.toString())
+                put("DISTRICT", district.toString())
+                put("CITY", subDistrict.toString())
+                put("Statecode", state.toString())
+                put("Pincode", pincode.toString())
+                put("Gender", gender.toString())
+                put("FatherName", fatherName.toString())
+                put("Agentcode", agentNo.toString())
+                put("DateOfApplication", dateOfApplication.toString())
+                put("RegiCerti", regCerti.toString())
+                put("Certi_Inco", certiIncome.toString())
+            }
 
-        Log.d("EncryptedData", encryptedData.toString())
+            val data = AESCryptoUtil.encrypt(modelJson.toString().trimIndent())
+            val encryptedData = cleanEncryptedString(data)
 
-        try {
-            RetrofitInstance.getInstance().updateDetails(encryptedData)
-                .enqueue(object : Callback<UniversalResponseModel> {
-                    override fun onResponse(
-                        call: Call<UniversalResponseModel>,
-                        response: Response<UniversalResponseModel>
-                    ) {
-                        progress.dismiss()
+            val urlString = "https://ckyc.tbsbl.com/TBSBCKYC_APP/KYCVERIFYDETAILS.asmx/getImageCkyc"
 
-                        if (response.isSuccessful) {
-                            val encryptedResponse = response.body()?.encrypted
-                            val decryptedResponse = AESCryptoUtil.decrypt((encryptedResponse ?: ""))
+            try {
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+                connection.setRequestProperty("Content-Type", "text/plain")
+                connection.setRequestProperty("Accept", "text/html")
 
-                            Log.d("EncryptedRes", (encryptedResponse ?: "null"))
-                            Log.d("DecryptedRes", decryptedResponse ?: "null")
 
-                            if (!decryptedResponse.isNullOrEmpty()) {
-                                try {
-                                    if (decryptedResponse.trim().startsWith("{")) {
-                                        val jsonObject = JSONObject(decryptedResponse)
-                                        val status = jsonObject.getString("message")
+                // Write the POST data to the output stream
+                val outputStream = DataOutputStream(connection.outputStream)
+                outputStream.writeBytes(encryptedData)
+                outputStream.flush()
+                outputStream.close()
 
-                                        if (status.equals("Success", ignoreCase = true)) {
+                // Read the response
+                val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                val response = StringBuilder()
+                var line: String?
 
-                                            if (type == "1") {
-                                                startActivity(
-                                                    Intent(
-                                                        this@CustomerDataActivity,
-                                                        IndivdualPhotoActivity::class.java
-                                                    )
-                                                        .putExtra("type", type)
-                                                        .putExtra("customerNo", customerNo)
-                                                )
-                                            }
-                                            if (type == "2") {
-                                                startActivity(
-                                                    Intent(
-                                                        this@CustomerDataActivity,
-                                                        IndivdualPhotoActivity::class.java
-                                                    )
-                                                        .putExtra("type", type)
-                                                        .putExtra("customerNo", customerNo)
-                                                )
-                                            }
-                                            if (type == "3") {
-                                                startActivity(
-                                                    Intent(
-                                                        this@CustomerDataActivity,
-                                                        RelatedPersonImageActivity::class.java
-                                                    )
-                                                        .putExtra("type", type)
-                                                        .putExtra("customerNo", customerNo)
-                                                )
-                                            }
+                while (reader.readLine().also { line = it } != null) {
+                    response.append(line)
+                }
+                reader.close()
 
-                                        } else {
-                                            Constant.error(
-                                                this@CustomerDataActivity,
-                                                "Success failed"
-                                            )
-                                        }
-                                    } else {
-                                        Constant.error(this@CustomerDataActivity, decryptedResponse)
-                                        Log.e("LoginError", "Decrypted response is not JSON")
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("JSON Error", e.message ?: "Parsing error")
-                                    Constant.error(this@CustomerDataActivity, "Parsing error")
-                                }
-                            } else {
-                                Constant.error(
+                val html = response.toString()
+
+                // Extract JSON string from HTML <p> tag
+                val start = html.indexOf("{")
+                val end = html.lastIndexOf("}") + 1
+                val encodedJson = html.substring(start, end)
+
+                // Decode HTML entities like &quot; => "
+                val decodedJson = Html.fromHtml(encodedJson, Html.FROM_HTML_MODE_LEGACY).toString()
+
+                // Parse JSON
+                val jsonObject = JSONObject(decodedJson)
+                val encryptedValue = jsonObject.getString("encrypted")
+
+                // Use result on UI thread
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    updateCustomerDetails(encryptedValue , type , customerNo)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("HTTP_ERROR", "Error fetching data: ${e.message}")
+            }
+        }.start()
+    }
+
+    private fun updateCustomerDetails(encryptedValue: String,type: String? , customerNo: String) {
+
+        val decryptedResponse = AESCryptoUtil.decrypt((encryptedValue ?: ""))
+
+        Log.d("EncryptedRes", (encryptedValue ?: "null"))
+        Log.d("DecryptedRes", decryptedResponse ?: "null")
+
+        if (!decryptedResponse.isNullOrEmpty()) {
+            try {
+                if (decryptedResponse.trim().startsWith("{")) {
+                    val jsonObject = JSONObject(decryptedResponse)
+                    val status = jsonObject.getString("message")
+
+                    if (status.equals("Success", ignoreCase = true)) {
+
+                        if (type == "1") {
+                            startActivity(
+                                Intent(
                                     this@CustomerDataActivity,
-                                    "Empty response from server"
+                                    IndivdualPhotoActivity::class.java
                                 )
-                            }
-                        } else {
-                            Constant.error(this@CustomerDataActivity, "Server returned error")
+                                    .putExtra("type", type)
+                                    .putExtra("customerNo", customerNo)
+                            )
                         }
-                    }
+                        if (type == "2") {
+                            startActivity(
+                                Intent(
+                                    this@CustomerDataActivity,
+                                    IndivdualPhotoActivity::class.java
+                                )
+                                    .putExtra("type", type)
+                                    .putExtra("customerNo", customerNo)
+                            )
+                        }
+                        if (type == "3") {
+                            startActivity(
+                                Intent(
+                                    this@CustomerDataActivity,
+                                    RelatedPersonImageActivity::class.java
+                                )
+                                    .putExtra("type", type)
+                                    .putExtra("customerNo", customerNo)
+                            )
+                        }
 
-                    override fun onFailure(call: Call<UniversalResponseModel>, t: Throwable) {
-                        progress.dismiss()
+                    } else {
                         Constant.error(
                             this@CustomerDataActivity,
-                            "API error: ${t.message}"
+                            "Success failed"
                         )
-                        Log.e("LoginError", t.message ?: "Unknown error")
                     }
-                })
-        } catch (e: Exception) {
-            progress.dismiss()
-            Log.e("LoginException", e.message ?: "Exception")
-            Constant.error(this@CustomerDataActivity, "Unexpected error occurred")
+                } else {
+                    Constant.error(this@CustomerDataActivity, decryptedResponse)
+                    Log.e("LoginError", "Decrypted response is not JSON")
+                }
+            } catch (e: Exception) {
+                Log.e("JSON Error", e.message ?: "Parsing error")
+                Constant.error(this@CustomerDataActivity, "Parsing error")
+            }
+        } else {
+            Constant.error(
+                this@CustomerDataActivity,
+                "Empty response from server"
+            )
         }
     }
 
