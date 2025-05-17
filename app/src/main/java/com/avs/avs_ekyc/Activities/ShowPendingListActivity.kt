@@ -50,7 +50,7 @@ class ShowPendingListActivity : AppCompatActivity() {
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this@ShowPendingListActivity)
 
-        fetchEncryptedValue(11, 10603)
+        fetchEncryptedValue("TBSB01BR", 10603)
 
         binding.addKyc.setOnClickListener {
             startActivity(
@@ -61,7 +61,7 @@ class ShowPendingListActivity : AppCompatActivity() {
         }
     }
 
-    fun fetchEncryptedValue(brcd: Int, prdCode: Int) {
+    fun fetchEncryptedValue(brcd: String, prdCode: Int) {
         Thread {
 
             runOnUiThread {
