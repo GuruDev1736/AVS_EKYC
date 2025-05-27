@@ -30,7 +30,7 @@ android {
         getByName("debug") {
             isDebuggable = true
             //buildConfigField("String", "BASE_URL", "\"http://110.227.207.211:90/CKYCTEST_API/\"")
-            buildConfigField("String", "BASE_URL", "\"https://ckyc.tbsbl.com/TBSBCKYC_APP/\"")
+            buildConfigField("String", "BASE_URL", "\"https://ckyc.avsinsotech.com/\"")
         }
         getByName("release") {
             isMinifyEnabled = false
@@ -39,7 +39,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 file("proguard-rules.pro")
             )
-            buildConfigField("String", "BASE_URL", "\"https://ckyc.tbsbl.com/TBSBCKYC_APP/\"")
+            buildConfigField("String", "BASE_URL", "\"https://ckyc.avsinsotech.com/\"")
         }
     }
 
